@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  linux_test:
+    image: ubuntu:latest
+    container_name: linux_test
+    volumes:
+      - ./:/code
+    working_dir: /code
+    tty: true
+    
