@@ -74,9 +74,13 @@
 
 - **Answer:**
   `how to compute the current time using a timer interrupt:`
+
   `- Start a timer.`
+
   `- Wait for the timer to interrupt the CPU.`
+
   `- Read the current value of the timer counter.`
+  
   `- The current value of the timer counter is the current time.`
 
 **1.10** Give two reasons why caches are useful. What problems do they solve? What problems do they cause? If a cache can be made as large as the device for which it is caching (for instance, a cache as large as a disk), why not make it that large and eliminate the device?
