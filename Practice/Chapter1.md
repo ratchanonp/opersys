@@ -80,12 +80,12 @@
   `- Wait for the timer to interrupt the CPU.`
 
   `- Read the current value of the timer counter.`
-  
+
   `- The current value of the timer counter is the current time.`
 
 **1.10** Give two reasons why caches are useful. What problems do they solve? What problems do they cause? If a cache can be made as large as the device for which it is caching (for instance, a cache as large as a disk), why not make it that large and eliminate the device?
 
-- **Anser:**
+- **Answer:**
   - **Reasons**
     - `Improved performance : solve the performance problem by providing faster access to data than the main memory.`
     - `Reduced power consumption : solve the power consumption problem by reducing the number of times that the CPU needs to access the main memory.`
