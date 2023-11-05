@@ -19,8 +19,13 @@ int allocation[NUMBER_OF_CUSTOMERS][NUMBER_OF_RESOURCES];
 int need[NUMBER_OF_CUSTOMERS][NUMBER_OF_RESOURCES];
 
 // Funtion prototypes
+void print_array(int array[], int size);
+void print_matrix(int matrix[][NUMBER_OF_RESOURCES], int rows, int columns);
 int request_resources(int customer_num, int request[]); 
 void release_resources(int customer_num, int release[]);
+void printError(int status);
+
+// Helper functions
 
 void print_array(int array[], int size) {
     for (int i = 0; i < size; i++) {
@@ -35,18 +40,34 @@ void print_matrix(int matrix[][NUMBER_OF_RESOURCES], int rows, int columns) {
     }
 }
 
+/**
+ * Print error message based on status
+ * -1: Request cannot be granted
+ * -2: Invalid request
+*/
+void printError(int status) {
+    if (status == -1) {
+        printf("Request cannot be granted\n");
+    } else if (status == -2) {
+        printf("Invalid request\n");
+    } else {
+        printf("Unknown error\n");
+    }
+}
+
 // Implementation
 int request_resources(int customer_num, int request[]) {
-    // Check if request is valid
+
+   // Check if request is valid
     for (int resource = 0; resource < NUMBER_OF_RESOURCES; resource++) {
         if (request[resource] > need[customer_num][resource]) {
             printf("Request is greater than need\n");
-            return -1;
+            return -2;
         }
 
         if (request[resource] > available[resource]) {
             printf("Request is greater than available\n");
-            return -1;
+            return -2;
         }
     }
 
@@ -69,41 +90,54 @@ int request_resources(int customer_num, int request[]) {
     // Initialize finish
     memset(finish, 0, sizeof(finish));
 
-    // Find a customer that can be finished
+    /**
+     * Find index of customer that can be finished
+     * finish[i] = 0 (false)
+     * Need[i] <= Work
+    */
+    step2:
     int customer = 0;
-    int found = 0;
-    while (found == 0) {
-        // Check if customer can be finished
-        int can_be_finished = 1;
-        for (int resource = 0; resource < NUMBER_OF_RESOURCES; resource++) {
-            if (need[customer][resource] > work[resource]) {
-                can_be_finished = 0;
-                break;
-            }
-        }
+    for(;customer < NUMBER_OF_CUSTOMERS; customer++) {
+        bool can_finish = true;
 
-        if (can_be_finished == 1 && finish[customer] == 0) {
-            found = 1;
-            finish[customer] = 1;
-
-            // Add allocated resources to work
+        if (finish[customer] == 0) {
+            // Check every resource not exceeding work (available)
             for (int resource = 0; resource < NUMBER_OF_RESOURCES; resource++) {
-                work[resource] += allocation[customer][resource];
+                if (need[customer][resource] > work[resource]) {
+                    can_finish = false;
+                    break;
+                }
             }
         }
 
-        customer = (customer + 1) % NUMBER_OF_CUSTOMERS;
+        if (can_finish && finish[customer] == 0) {
+            printf("Customer %d can finish\n", customer);
+            goto step3;
+        }
     }
 
-    // Check if all customers can be finished
+    goto step4; // No such i exists, go to step 4
+
+    step3:
+    for(int resource = 0; resource < NUMBER_OF_RESOURCES; resource++) {
+       work[resource] += allocation[customer][resource];
+       finish[customer] = 1;
+    }
+
+    goto step2; // Check if other customers can finish
+
+    // Check if all customers is finished
+    step4:
     bool all_finished = true;
     for (int customer = 0; customer < NUMBER_OF_CUSTOMERS; customer++) {
         if (finish[customer] == 0) {
+            printf("Customer %d cannot finish\n", customer);
             all_finished = 0;
             break;
         }
     }
 
+    // If not all customers is finished, rollback
     if (!all_finished) {
         // Restore resources
         for (int resource = 0; resource < NUMBER_OF_RESOURCES; resource++) {
@@ -112,11 +146,9 @@ int request_resources(int customer_num, int request[]) {
             need[customer_num][resource] += request[resource];
         }
 
-        printf("State is unsafe\n");
         return -1;
     }
 
-    printf("State is safe\n");
     return 0;
 }
 
@@ -161,8 +193,6 @@ int main() {
 
     fclose(max_request_file);
 
-    // print_matrix(maximum, NUMBER_OF_CUSTOMERS, NUMBER_OF_RESOURCES);
-
     // Get Resources capacity
     for(int resource = 0; resource < NUMBER_OF_RESOURCES; resource++) {
         scanf("%d", &available[resource]);
@@ -193,6 +223,7 @@ int main() {
     while(1) {
         scanf("%s", command);
 
+        // Print current state
         if (command[0] == '*') {
             printf("Available:\n");
             print_array(available, NUMBER_OF_RESOURCES);
@@ -205,21 +236,32 @@ int main() {
 
             printf("Need:\n");
             print_matrix(need, NUMBER_OF_CUSTOMERS, NUMBER_OF_RESOURCES);
-        } else if (command[0] == 'R' && command[1] == 'Q') {
+        } 
+        // Request resources
+        else if (command[0] == 'R' && command[1] == 'Q') {
             scanf("%d", &customer_num);
             for (int resource = 0; resource < NUMBER_OF_RESOURCES; resource++) {
                 scanf("%d", &request[resource]);
             }
 
-            printf("Requesting resources\n");
-            request_resources(customer_num, request);
-        } else if (command[0] == 'R' && command[1] == 'L') {
+            printf("Requesting resources...\n");
+            int status = request_resources(customer_num, request);
+
+            if (status == 0) {
+                printf("Request granted\n");
+            } else {
+                printError(status);
+            }
+
+        } 
+        // Release Resources
+        else if (command[0] == 'R' && command[1] == 'L') {
             scanf("%d", &customer_num);
             for (int resource = 0; resource < NUMBER_OF_RESOURCES; resource++) {
                 scanf("%d", &release[resource]);
             }
 
-            printf("Releasing resources\n");
+            printf("Releasing resources...\n");
             release_resources(customer_num, release);
         } else {
             printf("Invalid command\n");
