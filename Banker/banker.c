@@ -1,3 +1,9 @@
+/**
+ * Banker's Algorithm
+ * Author: Ratchanon Panmas
+ * ID: 6434480323
+*/
+
 #include <stdio.h>
 #include <stdlib.h> 
 #include <string.h>
@@ -221,6 +227,7 @@ int main() {
     int release[NUMBER_OF_RESOURCES];
 
     while(1) {
+        printf("Enter command> ");
         scanf("%s", command);
 
         // Print current state
